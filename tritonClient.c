@@ -13,20 +13,16 @@
 
 int main(int argc, char *argv[])
 {
-    if(argc != 4){
-        printf( "./client <ip_address> <port_number> <url>\n");
-        return 0;
-    }
+    printf( "./client <ip_address> <port_number> <url> [url]\n");
     char * server_ip_str = argv[1];
     char * server_port_str = argv[2];
-    char * url = argv[3];
     int sockfd, portno;
     off_t offset = 0;
     int rc, fd;
     char message[1024];
     bzero(message, 1024);
     strcat(message, "GET ");
-    strcat(message, url);
+    strcat(message, "/");
     char ver[12];
     bzero(ver, 12);
     strcat(ver, " HTTP/1.1");
@@ -39,11 +35,26 @@ int main(int argc, char *argv[])
     strcat(message, crlf);
     strcat(message, "Client_name: frank");
     strcat(message, crlf);
+    strcat(message, crlf);
+    strcat(message, "GET ");
+    strcat(message, "/test2.html");
+    strcat(message, ver);
+    strcat(message, crlf);
+    strcat(message, "Client_name: frank");
+    strcat(message, crlf);
+    strcat(message, crlf);
+    strcat(message, "GET ");
+    strcat(message, "/test3.html");
+    strcat(message, ver);
+    strcat(message, crlf);
+    strcat(message, "Client_name: frank");
+    strcat(message, crlf);
     strcat(message, "Connection: close");
+    strcat(message, crlf);
+    strcat(message, "JJ: big");
     strcat(message, crlf);
     strcat(message, crlf);
     printf("the request: %s", message);
-
     struct sockaddr_in serv_addr;
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -67,8 +78,17 @@ int main(int argc, char *argv[])
     char buffer[4000];
     bzero(buffer, 4000);
     send(sockfd, message, strlen(message),0);
+
     int numBytesRcvd = recv(sockfd, buffer, 4000, 0);
     printf("buffer: \n%s", buffer);
+    while(numBytesRcvd != 0){
+
+        bzero(buffer, 4000);
+        numBytesRcvd = recv(sockfd, buffer, 4000, 0);
+        if(numBytesRcvd == 0)
+            break;
+        printf("buffer: \n%s", buffer);
+    }
     close(sockfd);
     return 0;
 }
